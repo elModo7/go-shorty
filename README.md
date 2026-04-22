@@ -1,4 +1,4 @@
-<img src="image/go-shorty-mascot-500x.png" alt="go-shorty-mascot" width="200" height="200">
+<img src="https://github.com/user-attachments/assets/8bb4edb8-a291-456c-8ef1-bc9406f082e4" alt="go-shorty-mascot" width="200" height="200">
 
 # Go-shorty
 
@@ -18,17 +18,9 @@
 - Rate limiting
 - Expiration dates for short links
 - QR generation
-- Dedicated admin page for browsing/deleting links
+- Dedicated admin page for browsing, editing, searching, filtering, sorting, and deleting links
 
-![go-shorty web UI](image/go-shorty.png)
-
-## Stack
-
-- Go
-- `net/http` with route patterns and `PathValue`
-- SQLite via `modernc.org/sqlite`
-- Process metrics via `gopsutil`
-- Plain HTML/CSS/JS frontend embedded in the binary (AI assisted, frontend is not my strength)
+![go-shorty web UI](https://github.com/user-attachments/assets/19b4457e-4450-4aa3-8781-e6f34796a018)
 
 ## Running locally
 
@@ -44,7 +36,40 @@ You can also override the main runtime settings with environment variables:
 BASE_URL=http://localhost:8080
 LISTEN_ADDR=:8080
 DB_PATH=shorty.db
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin
 ```
+
+## Admin panel
+
+The app includes a dedicated admin panel at:
+
+`GET /admin`
+
+It is protected with HTTP Basic Auth.
+
+By default, the credentials are:
+
+- Username: `admin`
+- Password: `admin`
+
+For anything beyond local testing, override them with:
+
+```bash
+ADMIN_USERNAME=your-user
+ADMIN_PASSWORD=your-strong-password
+```
+
+The admin page currently supports:
+
+- paginated browsing
+- search by alias or destination URL
+- filter by active or expired links
+- sorting by clicks, alias, or creation date
+- copy short URL
+- open/regenerate QR
+- edit destination URL and expiration preset
+- delete links
 
 ## Docker
 
@@ -112,6 +137,14 @@ Redirects to the original URL and increments the click counter.
 `GET /health`
 
 Returns basic service status plus process/runtime metrics such as CPU, memory, goroutines, GC count, and app version.
+
+### Admin API
+
+The admin page uses these protected endpoints:
+
+- `GET /admin/api/links`
+- `PUT /admin/api/links/{code}`
+- `DELETE /admin/api/links/{code}`
 
 ## Project notes
 
