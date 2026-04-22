@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Go-shorty</title>
+  <style>
+    :root {
+      --bg: #f6f1e8;
+      --card: rgba(255, 252, 246, 0.92);
+      --ink: #1f2933;
+      --muted: #52606d;
+      --accent: #c05621;
+      --accent-strong: #9c4221;
+      --line: rgba(31, 41, 51, 0.12);
+      --ok: #276749;
+      --danger: #c53030;
+      --shadow: 0 24px 60px rgba(109, 78, 65, 0.16);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+      color: var(--ink);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      background: linear-gradient(135deg, #f8f2e8 0%, #f2e7d5 45%, #efe1cd 100%);
+    }
+
+    .shell {
+      width: min(1100px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 40px 0 56px;
+      position: relative;
+      z-index: 2;
+    }
+
+    #particles {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top left, rgba(192, 86, 33, 0.16), transparent 24%),
+        radial-gradient(circle at top right, rgba(214, 158, 46, 0.14), transparent 24%),
+        radial-gradient(circle at bottom center, rgba(255, 255, 255, 0.22), transparent 30%),
+        linear-gradient(135deg, #f8f2e8 0%, #f2e7d5 45%, #efe1cd 100%);
+      background-size: cover;
+      background-repeat: no-repeat;
+      z-index: 0;
+    }
+
+    .pg-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(248, 242, 232, 0.06), rgba(239, 225, 205, 0.12)),
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.05), transparent 55%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .hero {
+      display: grid;
+      gap: 24px;
+      grid-template-columns: 1.2fr 0.8fr;
+      align-items: stretch;
+      margin-bottom: 28px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .intro {
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .intro::after {
+      content: "";
+      position: absolute;
+      inset: auto -40px -80px auto;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(192, 86, 33, 0.22), rgba(214, 158, 46, 0.14));
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2.2rem, 4vw, 3.8rem);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(192, 86, 33, 0.12);
+      color: var(--accent-strong);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.72rem;
+    }
+
+    .lede {
+      margin: 0;
+      max-width: 38rem;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+
+    .stats {
+      display: grid;
+      gap: 14px;
+      padding: 24px;
+    }
+
+    .stat-card {
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(31, 41, 51, 0.08);
+    }
+
+    .stat-label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 1.7rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .stack {
+      display: grid;
+      gap: 24px;
+    }
+
+    .form-panel,
+    .overview-panel {
+      padding: 24px;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 1.2rem;
+      letter-spacing: -0.03em;
+    }
+
+    form {
+      display: grid;
+      gap: 14px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      align-items: end;
+    }
+
+    .form-grid label {
+      margin: 0;
+    }
+
+    .form-actions {
+      display: grid;
+      gap: 10px;
+      align-self: end;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(31, 41, 51, 0.12);
+      background: rgba(255, 255, 255, 0.86);
+      font-size: 1rem;
+      color: var(--ink);
+    }
+
+    input:focus {
+      outline: 2px solid rgba(192, 86, 33, 0.18);
+      border-color: rgba(192, 86, 33, 0.4);
+    }
+
+    select {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(31, 41, 51, 0.12);
+      background: rgba(255, 255, 255, 0.86);
+      font-size: 1rem;
+      color: var(--ink);
+    }
+
+    select:focus {
+      outline: 2px solid rgba(192, 86, 33, 0.18);
+      border-color: rgba(192, 86, 33, 0.4);
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 13px 18px;
+      font-size: 0.96rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 140ms ease, opacity 140ms ease, box-shadow 140ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    .primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: white;
+      box-shadow: 0 14px 30px rgba(156, 66, 33, 0.28);
+    }
+
+    .danger {
+      background: rgba(197, 48, 48, 0.12);
+      color: var(--danger);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .message {
+      min-height: 24px;
+      margin: 0;
+      font-size: 0.94rem;
+      font-weight: 600;
+    }
+
+    .message[data-state="success"] {
+      color: var(--ok);
+    }
+
+    .message[data-state="error"] {
+      color: var(--danger);
+    }
+
+    .toast-stack {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      display: grid;
+      gap: 10px;
+      z-index: 7;
+      pointer-events: none;
+    }
+
+    .toast {
+      min-width: min(320px, calc(100vw - 32px));
+      max-width: 420px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      color: #fffaf3;
+      background: rgba(12, 24, 37, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+      transform: translateY(14px);
+      opacity: 0;
+      transition: opacity 180ms ease, transform 180ms ease;
+      backdrop-filter: blur(12px);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .toast.success {
+      border-left: 4px solid #68d391;
+    }
+
+    .toast.error {
+      border-left: 4px solid #fc8181;
+    }
+
+    .toast-title {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.94rem;
+      font-weight: 700;
+    }
+
+    .toast-body {
+      display: block;
+      color: rgba(255, 250, 243, 0.86);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      word-break: break-all;
+    }
+
+    .modal-shell {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(5, 10, 18, 0.5);
+      backdrop-filter: blur(8px);
+      z-index: 6;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 180ms ease, visibility 180ms ease;
+    }
+
+    .modal-shell.open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      width: min(560px, 100%);
+      padding: 24px;
+      border-radius: 24px;
+      background: rgba(255, 251, 245, 0.96);
+      border: 1px solid rgba(31, 41, 51, 0.1);
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.3);
+      transform: translateY(16px) scale(0.98);
+      transition: transform 180ms ease;
+    }
+
+    .modal-shell.open .modal-card {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .modal-title {
+      margin: 0 0 6px;
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .modal-copy {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .modal-close {
+      width: 42px;
+      height: 42px;
+      border-radius: 999px;
+      background: rgba(31, 41, 51, 0.08);
+      color: var(--ink);
+      font-size: 1.2rem;
+      line-height: 1;
+      flex: 0 0 auto;
+    }
+
+    .generated-link {
+      margin: 18px 0;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(192, 86, 33, 0.08);
+      border: 1px solid rgba(192, 86, 33, 0.14);
+    }
+
+    .generated-link-label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .generated-link-value {
+      display: block;
+      color: var(--accent-strong);
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.6;
+      word-break: break-all;
+      text-decoration: none;
+    }
+
+    .qr-preview {
+      display: grid;
+      justify-items: center;
+      gap: 10px;
+      margin: 18px 0 6px;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(31, 41, 51, 0.04);
+      border: 1px solid rgba(31, 41, 51, 0.08);
+    }
+
+    .qr-preview img {
+      width: 192px;
+      height: 192px;
+      max-width: 100%;
+      border-radius: 12px;
+      background: white;
+      padding: 10px;
+      border: 1px solid rgba(31, 41, 51, 0.08);
+    }
+
+    .qr-preview a {
+      color: var(--accent-strong);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .ghost {
+      background: rgba(31, 41, 51, 0.06);
+      color: var(--ink);
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .overview-card {
+      padding: 24px;
+      border-radius: 20px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 248, 240, 0.92));
+      border: 1px solid rgba(31, 41, 51, 0.08);
+    }
+
+    .overview-label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .overview-value {
+      display: block;
+      font-size: clamp(2rem, 3vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-bottom: 10px;
+    }
+
+    .overview-copy {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .overview-footer {
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(31, 41, 51, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .empty-state {
+      margin: 18px 0 0;
+      color: var(--muted);
+    }
+
+    .footer-version {
+      margin-top: 22px;
+      text-align: center;
+      color: rgba(82, 96, 109, 0.92);
+      font-size: 0.88rem;
+      letter-spacing: 0.03em;
+    }
+
+    .footer-version strong {
+      color: var(--accent-strong);
+      font-weight: 700;
+    }
+
+    @media (max-width: 880px) {
+      .hero,
+      .form-grid,
+      .overview-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .shell {
+        width: min(100vw - 20px, 1100px);
+        padding-top: 20px;
+      }
+
+      .intro,
+      .stats,
+      .form-panel,
+      .overview-panel {
+        padding: 20px;
+      }
+
+      .modal-actions {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="particles" aria-hidden="true">
+    <div class="overlay"></div>
+  </div>
+
+  <main class="shell">
+    <section class="hero">
+      <article class="panel intro">
+        <span class="eyebrow">SQLite-backed GO URL shortener</span>
+        <h1>Short links with memory, aliases, and a real UI.</h1>
+        <p class="lede">
+          Create human-friendly aliases, track click counts, delete links you no longer need, and keep everything after restarts with SQLite persistence.
+        </p>
+      </article>
+
+      <aside class="panel stats">
+        <div class="stat-card">
+          <span class="stat-label">Base URL</span>
+          <strong class="stat-value" id="base-url">{{ .BaseURL }}</strong>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Shortened links</span>
+          <strong class="stat-value" id="link-count">0</strong>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">Total uses</span>
+          <strong class="stat-value" id="click-count">0</strong>
+        </div>
+      </aside>
+    </section>
+
+    <section class="stack">
+      <article class="panel form-panel">
+        <h2>Create short link</h2>
+        <form id="shorten-form">
+          <div class="form-grid">
+            <label>
+              Destination URL
+              <input id="url" name="url" type="url" placeholder="https://example.com/article" required>
+            </label>
+
+            <label>
+              Custom alias
+              <input id="alias" name="alias" type="text" placeholder="launch-page">
+            </label>
+
+            <label>
+              Expiration
+              <select id="expires-in" name="expires-in">
+                <option value="">Never expires</option>
+                <option value="1h">1 hour</option>
+                <option value="1d">1 day</option>
+                <option value="1w">1 week</option>
+                <option value="1m">1 month</option>
+                <option value="1y">1 year</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button class="primary" type="submit">Shorten URL</button>
+          </div>
+          <p class="hint">Aliases must be 3-32 characters using letters, numbers, hyphens, or underscores. Expiration can be fixed to 1 hour, 1 day, 1 week, 1 month, or 1 year.</p>
+          <p class="message" id="message" aria-live="polite"></p>
+        </form>
+      </article>
+
+      <article class="panel overview-panel">
+        <h2>Overview</h2>
+        <p class="hint">A light big-picture data homepage.</p>
+
+        <div class="overview-grid">
+          <section class="overview-card">
+            <span class="overview-label">Total shortened links</span>
+            <strong class="overview-value" id="overview-link-count">0</strong>
+            <p class="overview-copy">How many active short URLs are currently stored in the service.</p>
+          </section>
+
+          <section class="overview-card">
+            <span class="overview-label">Total shortened link uses</span>
+            <strong class="overview-value" id="overview-click-count">0</strong>
+            <p class="overview-copy">The cumulative number of redirects served across all short links.</p>
+          </section>
+        </div>
+
+        <div class="overview-footer">
+          <p class="empty-state" id="overview-status">Refreshes automatically after creating a new short link.</p>
+          <button class="ghost" id="refresh" type="button">Refresh</button>
+        </div>
+      </article>
+    </section>
+
+    <footer class="footer-version">
+      Running <a href="https://github.com/elModo7/go-shorty" target="_blank"><strong id="app-version">go-shorty</strong></a>
+    </footer>
+  </main>
+
+  <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+  <div class="modal-shell" id="link-modal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" id="modal-title">Short link created</h3>
+          <p class="modal-copy">You can copy it now with one click or open it in a new tab.</p>
+        </div>
+        <button class="modal-close" id="modal-close" type="button" aria-label="Close popup">&times;</button>
+      </div>
+
+      <div class="generated-link">
+        <span class="generated-link-label">Generated link</span>
+        <a class="generated-link-value" id="generated-link" href="#" target="_blank" rel="noreferrer"></a>
+      </div>
+
+      <div class="qr-preview">
+        <img id="generated-qr" alt="QR code for generated short link">
+        <a id="download-qr" href="#" target="_blank" rel="noreferrer">Open QR image</a>
+      </div>
+
+      <div class="modal-actions">
+        <button class="primary" id="copy-generated-link" type="button">Copy link</button>
+        <button class="ghost" id="open-generated-link" type="button">Open link</button>
+        <button class="ghost" id="open-generated-qr" type="button">Open QR</button>
+        <button class="ghost" id="close-generated-link" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    ;(function(window, document) {
+      "use strict";
+
+      var pluginName = "particleground";
+
+      function extend(out) {
+        out = out || {};
+        for (var i = 1; i < arguments.length; i++) {
+          var obj = arguments[i];
+          if (!obj) {
+            continue;
+          }
+          for (var key in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
+              out[key] = obj[key];
+            }
+          }
+        }
+        return out;
+      }
+
+      function Plugin(element, options) {
+        var canvasSupport = !!document.createElement("canvas").getContext;
+        var canvas;
+        var ctx;
+        var particles = [];
+        var raf;
+        var mouseX = 0;
+        var mouseY = 0;
+        var winW;
+        var winH;
+        var desktop = !navigator.userAgent.match(/(iPhone|iPod|iPad|Android|BlackBerry|BB10|mobi|tablet|opera mini|nexus 7)/i);
+        var orientationSupport = !!window.DeviceOrientationEvent;
+        var tiltX = 0;
+        var tiltY = 0;
+        var pointerX = 0;
+        var pointerY = 0;
+        var paused = false;
+
+        options = extend({}, window[pluginName].defaults, options);
+
+        function init() {
+          if (!canvasSupport) {
+            return;
+          }
+
+          canvas = document.createElement("canvas");
+          canvas.className = "pg-canvas";
+          element.insertBefore(canvas, element.firstChild);
+          ctx = canvas.getContext("2d");
+          styleCanvas();
+
+          var numParticles = Math.round((canvas.width * canvas.height) / options.density);
+          for (var i = 0; i < numParticles; i++) {
+            var p = new Particle();
+            p.setStackPos(i);
+            particles.push(p);
+          }
+
+          window.addEventListener("resize", resizeHandler, false);
+          document.addEventListener("mousemove", function(e) {
+            mouseX = e.pageX;
+            mouseY = e.pageY;
+          }, false);
+
+          if (orientationSupport && !desktop) {
+            window.addEventListener("deviceorientation", function(event) {
+              tiltY = Math.min(Math.max(-event.beta, -30), 30);
+              tiltX = Math.min(Math.max(-event.gamma, -30), 30);
+            }, true);
+          }
+
+          draw();
+        }
+
+        function styleCanvas() {
+          canvas.width = element.offsetWidth;
+          canvas.height = element.offsetHeight;
+          ctx.fillStyle = options.dotColor;
+          ctx.strokeStyle = options.lineColor;
+          ctx.lineWidth = options.lineWidth;
+        }
+
+        function draw() {
+          if (!canvasSupport) {
+            return;
+          }
+
+          winW = window.innerWidth;
+          winH = window.innerHeight;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          for (var i = 0; i < particles.length; i++) {
+            particles[i].updatePosition();
+          }
+
+          for (var j = 0; j < particles.length; j++) {
+            particles[j].draw();
+          }
+
+          if (!paused) {
+            raf = requestAnimationFrame(draw);
+          }
+        }
+
+        function resizeHandler() {
+          styleCanvas();
+
+          var elWidth = element.offsetWidth;
+          var elHeight = element.offsetHeight;
+
+          for (var i = particles.length - 1; i >= 0; i--) {
+            if (particles[i].position.x > elWidth || particles[i].position.y > elHeight) {
+              particles.splice(i, 1);
+            }
+          }
+
+          var numParticles = Math.round((canvas.width * canvas.height) / options.density);
+          if (numParticles > particles.length) {
+            while (numParticles > particles.length) {
+              var p = new Particle();
+              particles.push(p);
+            }
+          } else if (numParticles < particles.length) {
+            particles.splice(numParticles);
+          }
+
+          for (var j = particles.length - 1; j >= 0; j--) {
+            particles[j].setStackPos(j);
+          }
+        }
+
+        function Particle() {
+          this.stackPos = 0;
+          this.layer = Math.ceil(Math.random() * 3);
+          this.parallaxOffsetX = 0;
+          this.parallaxOffsetY = 0;
+          this.position = {
+            x: Math.ceil(Math.random() * canvas.width),
+            y: Math.ceil(Math.random() * canvas.height)
+          };
+          this.speed = {};
+
+          switch (options.directionX) {
+            case "left":
+              this.speed.x = +(-options.maxSpeedX + (Math.random() * options.maxSpeedX) - options.minSpeedX).toFixed(2);
+              break;
+            case "right":
+              this.speed.x = +((Math.random() * options.maxSpeedX) + options.minSpeedX).toFixed(2);
+              break;
+            default:
+              this.speed.x = +((-options.maxSpeedX / 2) + (Math.random() * options.maxSpeedX)).toFixed(2);
+              this.speed.x += this.speed.x > 0 ? options.minSpeedX : -options.minSpeedX;
+              break;
+          }
+
+          switch (options.directionY) {
+            case "up":
+              this.speed.y = +(-options.maxSpeedY + (Math.random() * options.maxSpeedY) - options.minSpeedY).toFixed(2);
+              break;
+            case "down":
+              this.speed.y = +((Math.random() * options.maxSpeedY) + options.minSpeedY).toFixed(2);
+              break;
+            default:
+              this.speed.y = +((-options.maxSpeedY / 2) + (Math.random() * options.maxSpeedY)).toFixed(2);
+              this.speed.y += this.speed.y > 0 ? options.minSpeedY : -options.minSpeedY;
+              break;
+          }
+        }
+
+        Particle.prototype.draw = function() {
+          ctx.beginPath();
+          ctx.arc(
+            this.position.x + this.parallaxOffsetX,
+            this.position.y + this.parallaxOffsetY,
+            options.particleRadius / 2,
+            0,
+            Math.PI * 2,
+            true
+          );
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.beginPath();
+          for (var i = particles.length - 1; i > this.stackPos; i--) {
+            var p2 = particles[i];
+            var a = this.position.x - p2.position.x;
+            var b = this.position.y - p2.position.y;
+            var dist = Math.sqrt((a * a) + (b * b));
+
+            if (dist < options.proximity) {
+              ctx.moveTo(this.position.x + this.parallaxOffsetX, this.position.y + this.parallaxOffsetY);
+              ctx.lineTo(p2.position.x + p2.parallaxOffsetX, p2.position.y + p2.parallaxOffsetY);
+            }
+          }
+          ctx.stroke();
+          ctx.closePath();
+        };
+
+        Particle.prototype.updatePosition = function() {
+          if (options.parallax) {
+            if (orientationSupport && !desktop) {
+              var ratioX = winW / 60;
+              var ratioY = winH / 60;
+              pointerX = (tiltX + 30) * ratioX;
+              pointerY = (tiltY + 30) * ratioY;
+            } else {
+              pointerX = mouseX;
+              pointerY = mouseY;
+            }
+
+            this.parallaxTargX = (pointerX - (winW / 2)) / (options.parallaxMultiplier * this.layer);
+            this.parallaxOffsetX += (this.parallaxTargX - this.parallaxOffsetX) / 10;
+            this.parallaxTargY = (pointerY - (winH / 2)) / (options.parallaxMultiplier * this.layer);
+            this.parallaxOffsetY += (this.parallaxTargY - this.parallaxOffsetY) / 10;
+          }
+
+          var elWidth = element.offsetWidth;
+          var elHeight = element.offsetHeight;
+
+          if (this.position.x + this.speed.x + this.parallaxOffsetX > elWidth || this.position.x + this.speed.x + this.parallaxOffsetX < 0) {
+            this.speed.x = -this.speed.x;
+          }
+
+          if (this.position.y + this.speed.y + this.parallaxOffsetY > elHeight || this.position.y + this.speed.y + this.parallaxOffsetY < 0) {
+            this.speed.y = -this.speed.y;
+          }
+
+          this.position.x += this.speed.x;
+          this.position.y += this.speed.y;
+        };
+
+        Particle.prototype.setStackPos = function(i) {
+          this.stackPos = i;
+        };
+
+        init();
+
+        return {
+          pause: function() {
+            paused = true;
+            if (raf) {
+              cancelAnimationFrame(raf);
+            }
+          },
+          start: function() {
+            if (!paused) {
+              return;
+            }
+            paused = false;
+            draw();
+          }
+        };
+      }
+
+      window[pluginName] = function(elem, options) {
+        return new Plugin(elem, options);
+      };
+
+      window[pluginName].defaults = {
+        minSpeedX: 0.08,
+        maxSpeedX: 0.35,
+        minSpeedY: 0.08,
+        maxSpeedY: 0.35,
+        directionX: "center",
+        directionY: "center",
+        density: 12000,
+        dotColor: "rgba(98, 72, 48, 0.85)",
+        lineColor: "rgba(98, 72, 48, 0.28)",
+        particleRadius: 5,
+        lineWidth: 1,
+        proximity: 110,
+        parallax: true,
+        parallaxMultiplier: 10
+      };
+    })(window, document);
+
+    (function() {
+      var lastTime = 0;
+      var vendors = ["ms", "moz", "webkit", "o"];
+      for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x] + "RequestAnimationFrame"];
+        window.cancelAnimationFrame = window[vendors[x] + "CancelAnimationFrame"] ||
+          window[vendors[x] + "CancelRequestAnimationFrame"];
+      }
+
+      if (!window.requestAnimationFrame) {
+        window.requestAnimationFrame = function(callback) {
+          var currTime = new Date().getTime();
+          var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+          var id = window.setTimeout(function() {
+            callback(currTime + timeToCall);
+          }, timeToCall);
+          lastTime = currTime + timeToCall;
+          return id;
+        };
+      }
+
+      if (!window.cancelAnimationFrame) {
+        window.cancelAnimationFrame = function(id) {
+          clearTimeout(id);
+        };
+      }
+    })();
+
+    const form = document.getElementById("shorten-form");
+    const message = document.getElementById("message");
+    const refreshButton = document.getElementById("refresh");
+    const baseURL = document.getElementById("base-url").textContent.trim();
+    const linkCount = document.getElementById("link-count");
+    const clickCount = document.getElementById("click-count");
+    const overviewLinkCount = document.getElementById("overview-link-count");
+    const overviewClickCount = document.getElementById("overview-click-count");
+    const overviewStatus = document.getElementById("overview-status");
+    const toastStack = document.getElementById("toast-stack");
+    const linkModal = document.getElementById("link-modal");
+    const modalClose = document.getElementById("modal-close");
+    const closeGeneratedLink = document.getElementById("close-generated-link");
+    const copyGeneratedLink = document.getElementById("copy-generated-link");
+    const openGeneratedLink = document.getElementById("open-generated-link");
+    const openGeneratedQR = document.getElementById("open-generated-qr");
+    const generatedLink = document.getElementById("generated-link");
+    const generatedQR = document.getElementById("generated-qr");
+    const downloadQR = document.getElementById("download-qr");
+    const appVersion = document.getElementById("app-version");
+    let latestShortURL = "";
+    let latestQRCodeURL = "";
+
+    function setMessage(text, state = "") {
+      message.textContent = text;
+      message.dataset.state = state;
+    }
+
+    function showToast(title, body, type = "success") {
+      const toast = document.createElement("div");
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <span class="toast-title">${title}</span>
+        <span class="toast-body">${body}</span>
+      `;
+
+      toastStack.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.add("show");
+      });
+
+      window.setTimeout(() => {
+        toast.classList.remove("show");
+        window.setTimeout(() => {
+          toast.remove();
+        }, 220);
+      }, 2600);
+    }
+
+    async function copyToClipboard(text) {
+      if (!navigator.clipboard || !window.isSecureContext) {
+        throw new Error("Clipboard API unavailable");
+      }
+      await navigator.clipboard.writeText(text);
+    }
+
+    function openLinkModal(shortURL, qrURL) {
+      latestShortURL = shortURL;
+      latestQRCodeURL = qrURL;
+      generatedLink.textContent = shortURL;
+      generatedLink.href = shortURL;
+      generatedQR.src = `${qrURL}?t=${Date.now()}`;
+      downloadQR.href = qrURL;
+      linkModal.classList.add("open");
+      linkModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeLinkModal() {
+      linkModal.classList.remove("open");
+      linkModal.setAttribute("aria-hidden", "true");
+    }
+
+    function renderOverview(links) {
+      if (!Array.isArray(links) || links.length === 0) {
+        linkCount.textContent = "0";
+        clickCount.textContent = "0";
+        overviewLinkCount.textContent = "0";
+        overviewClickCount.textContent = "0";
+        overviewStatus.textContent = "No short links yet. Create one to start tracking usage.";
+        return;
+      }
+
+      const now = Date.now();
+      const activeLinks = links.filter((link) => !link.expires_at || new Date(link.expires_at).getTime() > now);
+      const totalClicks = activeLinks.reduce((sum, link) => sum + (link.click_count || 0), 0);
+      const totalLinks = activeLinks.length;
+      const expiredCount = links.length - totalLinks;
+
+      linkCount.textContent = String(totalLinks);
+      clickCount.textContent = String(totalClicks);
+      overviewLinkCount.textContent = String(totalLinks);
+      overviewClickCount.textContent = String(totalClicks);
+      overviewStatus.textContent = `Tracking ${totalLinks} active short link${totalLinks === 1 ? "" : "s"} and ${totalClicks} total redirect${totalClicks === 1 ? "" : "s"}${expiredCount > 0 ? ` (${expiredCount} expired)` : ""}.`;
+    }
+
+    async function loadOverview() {
+      const response = await fetch("/links");
+      if (!response.ok) {
+        throw new Error("Failed to load overview");
+      }
+      const links = await response.json();
+      renderOverview(links);
+    }
+
+    async function loadVersion() {
+      try {
+        const response = await fetch("/health");
+        if (!response.ok) {
+          return;
+        }
+
+        const health = await response.json();
+        if (health && health.version) {
+          appVersion.textContent = `go-shorty v${health.version}`;
+        }
+      } catch (error) {
+        appVersion.textContent = "go-shorty";
+      }
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      setMessage("");
+
+      const submitButton = form.querySelector('button[type="submit"]');
+      submitButton.disabled = true;
+
+      try {
+        const payload = {
+          url: document.getElementById("url").value.trim(),
+          alias: document.getElementById("alias").value.trim(),
+          expires_in: document.getElementById("expires-in").value
+        };
+
+        const response = await fetch("/shorten", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const body = await response.json();
+        if (!response.ok) {
+          setMessage(body.error || "Request failed", "error");
+          return;
+        }
+
+        setMessage(`Created ${body.short_url}`, "success");
+        openLinkModal(body.short_url, body.qr_url);
+        showToast("Link created", body.expires_at ? "Use the popup to copy it, open it, or share its QR before it expires." : "Use the popup to copy it, open it, or share its QR.", "success");
+        form.reset();
+        await loadOverview();
+      } catch (error) {
+        setMessage("Request failed", "error");
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+
+    refreshButton.addEventListener("click", async () => {
+      try {
+        await loadOverview();
+        setMessage("Overview refreshed", "success");
+      } catch (error) {
+        setMessage("Failed to refresh overview", "error");
+      }
+    });
+
+    copyGeneratedLink.addEventListener("click", async () => {
+      if (!latestShortURL) {
+        return;
+      }
+
+      try {
+        await copyToClipboard(latestShortURL);
+        showToast("Copied to clipboard", latestShortURL, "success");
+      } catch (error) {
+        showToast("Copy failed", "The browser did not allow clipboard access.", "error");
+      }
+    });
+
+    openGeneratedLink.addEventListener("click", () => {
+      if (!latestShortURL) {
+        return;
+      }
+      window.open(latestShortURL, "_blank", "noopener,noreferrer");
+    });
+
+    openGeneratedQR.addEventListener("click", () => {
+      if (!latestQRCodeURL) {
+        return;
+      }
+      window.open(latestQRCodeURL, "_blank", "noopener,noreferrer");
+    });
+
+    modalClose.addEventListener("click", closeLinkModal);
+    closeGeneratedLink.addEventListener("click", closeLinkModal);
+
+    linkModal.addEventListener("click", (event) => {
+      if (event.target === linkModal) {
+        closeLinkModal();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && linkModal.classList.contains("open")) {
+        closeLinkModal();
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+      const particleRoot = document.getElementById("particles");
+      if (particleRoot) {
+        particleground(particleRoot, {
+          dotColor: "rgba(89, 63, 39, 0.88)",
+          lineColor: "rgba(89, 63, 39, 0.34)"
+        });
+      }
+    });
+
+    loadOverview().catch(() => {
+      setMessage("Failed to load overview", "error");
+    });
+    loadVersion();
+  </script>
+</body>
+</html>
