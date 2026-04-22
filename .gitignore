@@ -33,3 +33,6 @@ go.work.sum
 
 # GitHub
 image/
+*.ps1
+builds/
+dist/
