@@ -161,6 +161,7 @@ A few implementation choices were intentional:
 .
 ├── templates/
 │   └── index.html
+│   └── admin.html
 ├── Dockerfile
 ├── go.mod
 ├── main.go
