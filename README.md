@@ -170,7 +170,7 @@ A few implementation choices were intentional:
 
 ## UI Credits
 
-- **Author:** [@sebagarcia](https://www.sebagarcia.es/)
+- **Particles author:** [@sebagarcia](https://www.sebagarcia.es/)
 - **Inspired by:** *Particleground* by [Jonathan Nicol](https://github.com/jnicol)
 
 ## License
